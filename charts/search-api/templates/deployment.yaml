@@ -41,7 +41,7 @@ spec:
           image: {{ required "A valid .Values.dgctlDockerRegistry entry required" .Values.dgctlDockerRegistry }}/{{ .Values.api.repository }}:{{ .Values.api.tag }}
           imagePullPolicy: {{ .Values.api.pullPolicy }}
           securityContext:
-            runAsUser: 33
+            runAsUser: 11111
           command:
             - importer
             - --endpoint={{ required "Valid .Values.dgctlStorage.host required!" .Values.dgctlStorage.host }}
@@ -62,7 +62,7 @@ spec:
           image: {{ required "A valid .Values.dgctlDockerRegistry entry required" .Values.dgctlDockerRegistry }}/{{ .Values.api.repository }}:{{ .Values.api.tag }}
           imagePullPolicy: {{ .Values.api.pullPolicy }}
           securityContext:
-            runAsUser: 33
+            runAsUser: 11111
           command: ["Sapphire2", "--exec"]
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
@@ -75,6 +75,8 @@ spec:
               mountPath: /etc/2gis
             - name: search-api-data
               mountPath: {{ .Values.api.data_dir }}
+            - name: search-run
+              mountPath: /run
           env:
             - name: REDEPLOY_LABEL
               value: "{{ .Values.redeploy_label }}"
@@ -83,7 +85,7 @@ spec:
           imagePullPolicy: {{ .Values.nginx.pullPolicy }}
           command: ["nginx", "-c", "/etc/2gis/nginx.conf"]
           securityContext:
-            runAsUser: 33
+            runAsUser: 11111
           {{- if (le .Values.nginx.http_port 1024.0) }}
             capabilities:
               add:
@@ -110,6 +112,10 @@ spec:
           volumeMounts:
             - name: {{ include "search_api.name" $ }}-configmap
               mountPath: /etc/2gis
+            - name: search-run
+              mountPath: /run
+            - name: nginx-dir
+              mountPath: /var/cache/nginx/
       volumes:
         - name: {{ include "search_api.name" . }}-configmap
           configMap:
@@ -120,6 +126,10 @@ spec:
               - key: nginx_config
                 path: nginx.conf
         - name: search-api-data
+          emptyDir: {}
+        - name: search-run
+          emptyDir: {}
+        - name: nginx-dir
           emptyDir: {}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

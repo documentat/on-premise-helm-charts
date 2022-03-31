@@ -52,7 +52,7 @@ data:
         gzip_min_length 512;
 
         access_log off;
-        error_log off;
+        error_log stderr;
 
         server {
             listen {{ .Values.nginx.http_port }};
